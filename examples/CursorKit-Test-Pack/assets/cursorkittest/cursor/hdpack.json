@@ -1,0 +1,27 @@
+{
+    "name": "HD Pack Set (32px)",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "hdpack/ring32.png",
+            "hotspot": [
+                16,
+                16
+            ]
+        },
+        "clickable": {
+            "texture": "hdpack/square32.png",
+            "hotspot": [
+                16,
+                16
+            ]
+        }
+    },
+    "click_effect": {
+        "type": "image",
+        "texture": "click/ring.png",
+        "frames": 6,
+        "frame_ms": 45,
+        "size": 48
+    }
+}

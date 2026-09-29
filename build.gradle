@@ -1,0 +1,68 @@
+plugins {
+    // Provides the assemble/build lifecycle tasks so universalJar can be wired into them
+    id 'base'
+    id 'net.fabricmc.fabric-loom' version '1.15.5' apply false
+    id 'net.neoforged.moddev' version '2.0.147' apply false
+}
+
+version = mod_version
+
+//---------------------------------------------------------------------------------------------
+// Universal jar: one artifact that loads on both Fabric and NeoForge.
+//
+// The NeoForge jar already contains every shared (`common`) class, so it is used as the base; the
+// Fabric jar only contributes the files that do not exist there (fabric.mod.json and the
+// Fabric-only entry point). Duplicates keep the NeoForge copy, which is why that tree is added
+// first. MC 26.x has no intermediary mappings, so both sides already use official names and no
+// remapping is involved.
+//---------------------------------------------------------------------------------------------
+tasks.register('universalJar', Jar) {
+    group = 'build'
+    description = 'Packs both loaders into a single universal jar'
+
+    dependsOn ':fabric:jar', ':neoforge:jar'
+    archiveFileName = "${mod_id}-${mod_version}-universal.jar"
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from({ zipTree(project(':neoforge').tasks.named('jar').get().archiveFile.get().asFile) }) {
+        exclude 'META-INF/MANIFEST.MF'
+    }
+    from({ zipTree(project(':fabric').tasks.named('jar').get().archiveFile.get().asFile) }) {
+        exclude 'META-INF/MANIFEST.MF'
+    }
+
+    manifest {
+        attributes(
+                'Specification-Title'   : mod_name,
+                'Specification-Vendor'  : mod_authors,
+                'Specification-Version' : archiveVersion.get(),
+                'Implementation-Title'  : "${mod_id}-universal",
+                'Implementation-Version': archiveVersion.get(),
+                'Implementation-Vendor' : mod_authors,
+                'Built-On-Minecraft'    : minecraft_version
+        )
+    }
+}
+
+tasks.named('assemble') {
+    dependsOn 'universalJar'
+}
+
+// Collect both platform JARs and the universal jar into a single distribution zip
+tasks.register('distZip', Zip) {
+    group = 'distribution'
+    description = 'Packs Fabric, NeoForge and universal JARs into one zip for distribution'
+    archiveFileName = "${mod_id}-${mod_version}.zip"
+    destinationDirectory = layout.buildDirectory.dir('dist')
+
+    from(project(':fabric').tasks.named('jar')) {
+        into 'fabric'
+    }
+    from(project(':neoforge').tasks.named('jar')) {
+        into 'neoforge'
+    }
+    from(tasks.named('universalJar')) {
+        into 'universal'
+    }
+}

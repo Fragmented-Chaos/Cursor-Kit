@@ -1,0 +1,87 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.fabricmc.fabric-loom'
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+
+    // No Sodium dependency on purpose: the video settings link is made at runtime, see
+    // CursorSodiumLink. This mod has to build and run with or without Sodium installed.
+
+    // Cursor set parsing is deliberately Minecraft-free, so it can be unit tested on a plain JVM
+    testImplementation "com.google.code.gson:gson:2.11.0"
+    testImplementation "org.slf4j:slf4j-api:2.0.16"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat = 'full'
+    }
+}
+
+loom {
+    def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
+    if (aw.exists()) {
+        accessWidenerPath.set(aw)
+    }
+    runs {
+        client {
+            client()
+            setConfigName('Fabric Client')
+            ideConfigGenerated(true)
+            runDir('runs/client')
+        }
+        server {
+            server()
+            setConfigName('Fabric Server')
+            ideConfigGenerated(true)
+            runDir('runs/server')
+        }
+    }
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
+    configurations.named("$variant") {
+        attributes { attribute(loaderAttribute, 'fabric') }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes { attribute(loaderAttribute, 'fabric') }
+        }
+    }
+}
+
+// Sodium's configuration API is not a dependency. The handful of interfaces this mod implements live
+// in common/src/sodiumApi as compile-only stubs: they are compiled into their own output, put on the
+// compile class path only, and never packaged or present at runtime, where Sodium supplies the real
+// ones. See CursorSodiumConfig.
+sourceSets {
+    sodiumApi {
+        java.srcDir project(':common').file('src/sodiumApi/java')
+    }
+}
+sourceSets.sodiumApi.compileClasspath = configurations.compileClasspath
+sourceSets.main.compileClasspath += sourceSets.sodiumApi.output
+
+tasks.named('javadoc', Javadoc) {
+    // The stub output is only put on the compile class path, and the javadoc task keeps its own
+    // snapshot of that collection, so it has to be told about the stubs separately.
+    classpath += sourceSets.sodiumApi.output
+}

@@ -1,0 +1,91 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    version = neoforge_version
+    // Automatically enable neoforge AccessTransformers if the file exists
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    runs {
+        configureEach {
+            systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
+            ideName = "NeoForge ${it.name.capitalize()} (${project.path})"
+        }
+        client {
+            client()
+            gameDirectory = this.mkdir(this.file("runs/client"))
+        }
+        server {
+            server()
+            programArgument("--nogui")
+            this.file("runs/server").createParentDirectories()
+            gameDirectory = this.mkdir(this.file("runs/server"))
+        }
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+// Prevent duplicate resource errors from common module
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Copy META-INF into classes output so NeoForge finds neoforge.mods.toml at runtime
+tasks.named('classes') {
+    doLast {
+        copy {
+            from sourceSets.main.output.resourcesDir
+            into sourceSets.main.output.classesDirs.singleFile
+            include 'META-INF/**'
+        }
+    }
+}
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named("$variant") {
+        attributes { attribute(loaderAttribute, 'neoforge') }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName, it.getTaskName(null, 'jarJar')].each { variant ->
+        configurations.named("$variant") {
+            attributes { attribute(loaderAttribute, 'neoforge') }
+        }
+    }
+}
+
+// Sodium's configuration API is not a dependency. The handful of interfaces this mod implements live
+// in common/src/sodiumApi as compile-only stubs: they are compiled into their own output, put on the
+// compile class path only, and never packaged or present at runtime, where Sodium supplies the real
+// ones. See CursorSodiumConfig.
+sourceSets {
+    sodiumApi {
+        java.srcDir project(':common').file('src/sodiumApi/java')
+    }
+}
+sourceSets.sodiumApi.compileClasspath = configurations.compileClasspath
+sourceSets.main.compileClasspath += sourceSets.sodiumApi.output
+
+tasks.named('javadoc', Javadoc) {
+    // The stub output is only put on the compile class path, and the javadoc task keeps its own
+    // snapshot of that collection, so it has to be told about the stubs separately.
+    classpath += sourceSets.sodiumApi.output
+}

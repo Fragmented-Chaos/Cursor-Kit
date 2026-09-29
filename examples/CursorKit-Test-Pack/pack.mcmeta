@@ -1,0 +1,7 @@
+{
+    "pack": {
+        "description": "Cursor Kit test pack (demo override + packtest)",
+        "min_format": 84,
+        "max_format": 999
+    }
+}

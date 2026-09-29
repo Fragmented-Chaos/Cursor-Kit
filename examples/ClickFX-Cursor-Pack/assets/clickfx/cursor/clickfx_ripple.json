@@ -1,0 +1,43 @@
+{
+    "name": "ClickFX Gold Ripple",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "gold/arrow.png",
+            "hotspot": [
+                1,
+                1
+            ]
+        },
+        "clickable": {
+            "texture": "gold/arrow_click.png",
+            "hotspot": [
+                1,
+                1
+            ]
+        },
+        "text": {
+            "texture": "gold/ibeam.png",
+            "hotspot": [
+                16,
+                16
+            ]
+        },
+        "busy": {
+            "texture": "gold/busy.png",
+            "frames": 8,
+            "frame_ms": 90,
+            "hotspot": [
+                16,
+                16
+            ]
+        }
+    },
+    "click_effect": {
+        "type": "image",
+        "texture": "gold/click/ripple.png",
+        "frames": 8,
+        "frame_ms": 45,
+        "size": 48
+    }
+}

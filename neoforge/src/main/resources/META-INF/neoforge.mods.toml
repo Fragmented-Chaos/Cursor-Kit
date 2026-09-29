@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "${neoforge_loader_version_range}"
+license = "${license}"
+issueTrackerURL="https://github.com/Fragmented-Chaos/Cursor-Kit/issues"
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+displayURL="https://github.com/Fragmented-Chaos/Cursor-Kit"
+credits="${credits}"
+authors = "${mod_authors}"
+description = '''${description}'''
+# 纯客户端模组：服务器未安装时不应报错
+displayTest="IGNORE_ALL_VERSION"
+
+[[mixins]]
+config = "cursorkit.mixins.json"
+
+# 装了钠时，钠会读这个属性并调用该类，把“光标”加进视频设置的页面列表；没装钠时这个类不会被加载。
+# 钠不是依赖：该类编译时用的是 common/src/sodiumApi 里的空接口副本。
+[modproperties.${mod_id}]
+"sodium:config_api_user" = "com.fragmentedchaos.cursorkit.client.sodium.CursorSodiumConfig"
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type="required"
+versionRange = "[${neoforge_version},)"
+ordering = "NONE"
+side = "CLIENT"
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type="required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "CLIENT"

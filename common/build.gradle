@@ -1,0 +1,75 @@
+plugins {
+    id 'multiloader-common'
+    id 'net.neoforged.moddev'
+}
+
+neoForge {
+    neoFormVersion = neo_form_version
+    // Automatically enable AccessTransformers if the file exists
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+}
+
+dependencies {
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
+    // fabric and neoforge both bundle mixinextras, so it is safe to use it in common
+    compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+    annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
+}
+
+configurations {
+    commonJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+}
+
+artifacts {
+    commonJava sourceSets.main.java.sourceDirectories.singleFile
+    commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'common')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'common')
+            }
+        }
+    }
+}
+
+compileJava.enabled = false
+
+// Sodium's configuration API is not a dependency. The handful of interfaces this mod implements live
+// in common/src/sodiumApi as compile-only stubs: they are compiled into their own output, put on the
+// compile class path only, and never packaged or present at runtime, where Sodium supplies the real
+// ones. See CursorSodiumConfig.
+sourceSets {
+    sodiumApi {
+        java.srcDir file('src/sodiumApi/java')
+    }
+}
+sourceSets.sodiumApi.compileClasspath = configurations.compileClasspath
+sourceSets.main.compileClasspath += sourceSets.sodiumApi.output
+
+tasks.named('javadoc', Javadoc) {
+    // The stub output is only put on the compile class path, and the javadoc task keeps its own
+    // snapshot of that collection, so it has to be told about the stubs separately.
+    classpath += sourceSets.sodiumApi.output
+}

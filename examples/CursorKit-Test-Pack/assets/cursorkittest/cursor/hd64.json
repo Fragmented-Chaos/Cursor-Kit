@@ -1,0 +1,20 @@
+{
+    "name": "HD 64px Set",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "hd64/ring64.png",
+            "hotspot": [
+                32,
+                32
+            ]
+        }
+    },
+    "click_effect": {
+        "type": "burst",
+        "color": "#7FD4FF",
+        "radius": 22,
+        "duration_ms": 500,
+        "particles": 10
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "required": true,
+    "package": "com.fragmentedchaos.cursorkit.mixin",
+    "compatibilityLevel": "JAVA_25",
+    "mixins": [],
+    "client": [
+        "GuiGraphicsExtractorMixin",
+        "ReloadableResourceManagerMixin",
+        "MouseHandlerMixin",
+        "ScreenEntryMixin",
+        "VideoSettingsScreenMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

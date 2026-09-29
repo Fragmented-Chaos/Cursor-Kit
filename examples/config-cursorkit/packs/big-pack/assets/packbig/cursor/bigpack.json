@@ -1,0 +1,20 @@
+{
+    "name": "Big 32px Pack",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "big.png",
+            "hotspot": [
+                16,
+                16
+            ]
+        },
+        "clickable": {
+            "texture": "big2.png",
+            "hotspot": [
+                16,
+                16
+            ]
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${mod_version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_authors}"
+    ],
+    "contact": {
+        "homepage": "https://github.com/Fragmented-Chaos/Cursor-Kit",
+        "sources": "https://github.com/Fragmented-Chaos/Cursor-Kit",
+        "issues": "https://github.com/Fragmented-Chaos/Cursor-Kit/issues"
+    },
+    "license": "${license}",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "com.fragmentedchaos.cursorkit.fabric.CursorKitFabric"
+        ],
+        "sodium:config_api_user": [
+            "com.fragmentedchaos.cursorkit.client.sodium.CursorSodiumConfig"
+        ]
+    },
+    "mixins": [
+        "cursorkit.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabric_loader_min_version}",
+        "minecraft": ">=${minecraft_version}",
+        "java": ">=${java_version}"
+    }
+}

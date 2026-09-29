@@ -1,0 +1,20 @@
+{
+    "name": "Pack Demo",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "demo/arrow.png",
+            "hotspot": [
+                0,
+                0
+            ]
+        }
+    },
+    "click_effect": {
+        "type": "ripple",
+        "color": "#FFD479",
+        "radius": 18,
+        "duration_ms": 450,
+        "particles": 6
+    }
+}

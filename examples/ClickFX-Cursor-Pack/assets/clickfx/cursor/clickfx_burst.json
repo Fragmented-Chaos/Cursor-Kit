@@ -1,0 +1,43 @@
+{
+    "name": "ClickFX Blue Burst",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "blue/arrow.png",
+            "hotspot": [
+                1,
+                1
+            ]
+        },
+        "clickable": {
+            "texture": "blue/arrow_click.png",
+            "hotspot": [
+                1,
+                1
+            ]
+        },
+        "text": {
+            "texture": "blue/ibeam.png",
+            "hotspot": [
+                16,
+                16
+            ]
+        },
+        "busy": {
+            "texture": "blue/busy.png",
+            "frames": 8,
+            "frame_ms": 90,
+            "hotspot": [
+                16,
+                16
+            ]
+        }
+    },
+    "click_effect": {
+        "type": "image",
+        "texture": "blue/click/burst.png",
+        "frames": 8,
+        "frame_ms": 40,
+        "size": 48
+    }
+}

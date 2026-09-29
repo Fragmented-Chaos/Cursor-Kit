@@ -1,0 +1,20 @@
+{
+    "name": "Folder Pack",
+    "scale": 1,
+    "states": {
+        "default": {
+            "texture": "arrow.png",
+            "hotspot": [
+                2,
+                2
+            ]
+        },
+        "clickable": {
+            "texture": "hand.png",
+            "hotspot": [
+                2,
+                2
+            ]
+        }
+    }
+}

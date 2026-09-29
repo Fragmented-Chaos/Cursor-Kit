@@ -1,0 +1,19 @@
+{
+    "name": "Local Config Test",
+    "states": {
+        "default": {
+            "texture": "localtest/arrow.png",
+            "hotspot": [
+                8,
+                8
+            ]
+        },
+        "clickable": {
+            "texture": "localtest/hand.png",
+            "hotspot": [
+                7,
+                1
+            ]
+        }
+    }
+}

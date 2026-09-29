@@ -1,0 +1,7 @@
+{
+    "pack": {
+        "description": "ClickFX cursor pack: three cursors, each with its own click effect",
+        "min_format": 84,
+        "max_format": 999
+    }
+}

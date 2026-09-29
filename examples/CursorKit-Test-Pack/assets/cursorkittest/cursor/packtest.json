@@ -1,0 +1,31 @@
+{
+    "name": "Pack Test",
+    "scale": 2,
+    "states": {
+        "default": {
+            "texture": "packtest/cross.png",
+            "hotspot": [
+                7,
+                7
+            ]
+        },
+        "clickable": {
+            "texture": "packtest/hand.png",
+            "hotspot": [
+                7,
+                1
+            ]
+        },
+        "busy": {
+            "texture": "packtest/pulse.png",
+            "frames": 4,
+            "frame_ms": 120
+        }
+    },
+    "click_effect": {
+        "type": "pulse",
+        "color": "#FFFFFF",
+        "radius": 12,
+        "duration_ms": 320
+    }
+}
