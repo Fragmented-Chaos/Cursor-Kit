@@ -5,8 +5,8 @@ import com.fragmentedchaos.cursorkit.client.SystemCursorScreen;
 import com.fragmentedchaos.cursorkit.Constants;
 import com.fragmentedchaos.cursorkit.cursor.config.CursorConfig;
 import com.fragmentedchaos.cursorkit.cursor.model.CursorImage;
-import com.fragmentedchaos.cursorkit.cursor.CursorManager;
 import com.fragmentedchaos.cursorkit.cursor.model.CursorSet;
+import com.fragmentedchaos.cursorkit.cursor.CursorManager;
 import com.fragmentedchaos.cursorkit.cursor.model.ClickEffect;
 import com.fragmentedchaos.cursorkit.cursor.model.CursorState;
 import com.mojang.blaze3d.platform.Window;
@@ -46,18 +46,24 @@ public final class CursorRenderer {
         }
 
         CursorConfig config = CursorManager.get().config();
-        if (!config.enabled() || CursorManager.get().findSelected().isEmpty()) {
+        CursorSet selected = CursorManager.get().findSelected().orElse(null);
+        if (!config.enabled() || selected == null) {
             // Switched off, or "Default" is selected: nothing of ours is drawn.
             CursorVisibility.setHidden(false);
             return false;
         }
+
+        // The hand-made set is offered even before a path is usable, and a pack may ship no image at
+        // all. Asking first keeps the system cursor in that case instead of hiding it and then
+        // drawing nothing, which would leave the player with no pointer at all.
+        boolean drawable = selected.image(drawnState(resolved.state(), config.animate())).isPresent();
 
         double mouseX = mouse.getScaledXPos(window);
         double mouseY = mouse.getScaledYPos(window);
         boolean takeOver = CursorVisibilityPolicy.shouldTakeOver(window.isFocused(),
                 mouse.isMouseGrabbed(), mouseX, mouseY,
                 window.getGuiScaledWidth(), window.getGuiScaledHeight(), config.edgeMargin(),
-                resolved.screen() instanceof SystemCursorScreen);
+                resolved.screen() instanceof SystemCursorScreen, drawable);
         CursorVisibility.setHidden(takeOver);
         return takeOver;
     }

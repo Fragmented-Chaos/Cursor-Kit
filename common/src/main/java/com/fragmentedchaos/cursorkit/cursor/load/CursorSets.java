@@ -43,10 +43,11 @@ public final class CursorSets {
      * @param config        the loaded configuration
      * @param gameDirectory relative paths are taken from here, may be {@code null}
      * @param source        what to show as its source, usually the configuration file
-     * @return the set, or empty when no state has a usable file
+     * @return the set, which may carry no images at all: the picker always offers the hand-made row
+     *         so the player can open the path editor and fill it in
      */
-    public static Optional<CursorSet> custom(CursorConfig config, @Nullable Path gameDirectory,
-                                             String source) {
+    public static CursorSet custom(CursorConfig config, @Nullable Path gameDirectory,
+                                   String source) {
         Map<CursorState, CursorImage> images = new LinkedHashMap<>();
         for (CursorState state : CursorState.values()) {
             String configured = config.customState(state.id());
@@ -64,12 +65,9 @@ public final class CursorSets {
             images.put(state, new CursorImage(file.toString(), CursorImage.UNSET_HOTSPOT,
                     CursorImage.UNSET_HOTSPOT, 1, 100));
         }
-        if (images.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(new CursorSet(CUSTOM_ID, CUSTOM_NAME, Constants.MOD_ID,
+        return new CursorSet(CUSTOM_ID, CUSTOM_NAME, Constants.MOD_ID,
                 CursorSetOrigin.CUSTOM_STATES, source, 1, Map.copyOf(images),
-                effect(config.customEffect(), gameDirectory)));
+                effect(config.customEffect(), gameDirectory));
     }
 
     /**

@@ -372,6 +372,11 @@ public class CursorKitScreen extends Screen {
             // The details panel has no room for another line, so the warning rides on the button.
             label = label.copy().append(CursorTranslations.get("cursorkit.custom.edit_broken",
                     "  (%s not found)", broken));
+        } else if (this.selected != null && this.selected.images().isEmpty()) {
+            // Nothing picked yet: while the set is selected the mod deliberately leaves the system
+            // cursor in place, so say why nothing changed instead of leaving the player guessing.
+            label = label.copy().append(CursorTranslations.get("cursorkit.custom.edit_empty",
+                    "  (no image picked yet)"));
         }
         FlatButton edit = new FlatButton(panelLeft + 6, HEADER_HEIGHT + 30, panelWidth, 18,
                 label, button -> openStateEditor());

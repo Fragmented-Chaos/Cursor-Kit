@@ -10,6 +10,8 @@ displayURL="https://github.com/Fragmented-Chaos/Cursor-Kit"
 credits="${credits}"
 authors = "${mod_authors}"
 description = '''${description}'''
+# 模组列表里显示的方形图标（就是 Sodium 页面列表里那个箭头）
+iconFile = "assets/cursorkit/textures/gui/icon.png"
 # 纯客户端模组：服务器未安装时不应报错
 displayTest="IGNORE_ALL_VERSION"
 

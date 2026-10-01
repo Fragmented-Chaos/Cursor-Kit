@@ -40,7 +40,7 @@ class CursorSetsTest {
         config.setCustomState("clickable", root.resolve("missing.png").toString());
         config.setCustomState("text", "");
 
-        CursorSet set = CursorSets.custom(config, root, "config").orElseThrow();
+        CursorSet set = CursorSets.custom(config, root, "config");
 
         assertEquals(CursorSets.CUSTOM_ID, set.id());
         assertEquals(CursorSetOrigin.CUSTOM_STATES, set.origin());
@@ -57,20 +57,34 @@ class CursorSetsTest {
         CursorConfig config = new CursorConfig();
         config.setCustomState("default", "my-cursors/hand.png");
 
-        CursorSet set = CursorSets.custom(config, game, "config").orElseThrow();
+        CursorSet set = CursorSets.custom(config, game, "config");
 
         assertEquals(cursors.resolve("hand.png").toString(),
                 set.image(CursorState.DEFAULT).orElseThrow().texture());
     }
 
     @Test
-    void withoutUsablePathsThereIsNoSetAtAll(@TempDir Path root) {
-        assertTrue(CursorSets.custom(new CursorConfig(), root, "config").isEmpty());
+    void withoutUsablePathsTheRowIsStillOffered(@TempDir Path root) {
+        assertTrue(CursorSets.custom(new CursorConfig(), root, "config").images().isEmpty(),
+                "no path configured: the row stays so the editor can be opened");
 
         CursorConfig config = new CursorConfig();
         config.setCustomState("default", "\0not a path");
-        assertTrue(CursorSets.custom(config, null, "config").isEmpty(),
+        assertTrue(CursorSets.custom(config, null, "config").images().isEmpty(),
                 "a path the platform cannot parse is reported as no path, not as a crash");
+    }
+
+    @Test
+    void aStateOtherThanDefaultIsEnough(@TempDir Path root) throws Exception {
+        Path hand = root.resolve("hand.png");
+        Files.write(hand, new byte[] {1});
+
+        CursorConfig config = new CursorConfig();
+        config.setCustomState("clickable", hand.toString());
+
+        CursorSet set = CursorSets.custom(config, root, "config");
+        assertEquals(hand.toString(), set.image(CursorState.CLICKABLE).orElseThrow().texture(),
+                "a set without a default image is legal for the hand-made row");
     }
 
     @Test
@@ -109,7 +123,7 @@ class CursorSetsTest {
         Path arrow = Files.write(root.resolve("arrow.png"), new byte[] {3});
         CursorConfig config = new CursorConfig();
         config.setCustomState("default", arrow.toString());
-        CursorSet set = CursorSets.custom(config, root, "config").orElseThrow();
+        CursorSet set = CursorSets.custom(config, root, "config");
         CursorImage image = set.image(CursorState.DEFAULT).orElseThrow();
 
         String id = com.fragmentedchaos.cursorkit.client.render.CursorTextures.resolve(set, image).toString();
@@ -129,7 +143,7 @@ class CursorSetsTest {
                 """, StandardCharsets.UTF_8);
         CursorConfig config = new CursorConfig();
         config.setCustomState("default", root.resolve("arrow.png").toString());
-        CursorSet handMade = CursorSets.custom(config, root, "config").orElseThrow();
+        CursorSet handMade = CursorSets.custom(config, root, "config");
         CursorSet fromFile = CursorSetLoader.loadFromConfigDirectory(root).get(0);
 
         List<CursorSet> merged = CursorSetRegistry.merge(List.of(handMade, fromFile));
@@ -149,7 +163,7 @@ class CursorSetsTest {
         config.setCustomEffect(new ClickEffect("image", 0xFFFFFF, 15.0F, 400L, 6,
                 "click.png", 8, 50, 48));
 
-        CursorSet set = CursorSets.custom(config, game, "config").orElseThrow();
+        CursorSet set = CursorSets.custom(config, game, "config");
 
         assertEquals(strip.toString(), set.clickEffect().texture(),
                 "the animation path is resolved like the per-state ones");
@@ -164,7 +178,7 @@ class CursorSetsTest {
         config.setCustomEffect(new ClickEffect("image", 0xFFFFFF, 15.0F, 400L, 6,
                 "nope.png", 8, 50, 48));
 
-        CursorSet set = CursorSets.custom(config, game, "config").orElseThrow();
+        CursorSet set = CursorSets.custom(config, game, "config");
 
         assertEquals(ClickEffect.DEFAULT, set.clickEffect(),
                 "better the mod's own effect than nothing at all");

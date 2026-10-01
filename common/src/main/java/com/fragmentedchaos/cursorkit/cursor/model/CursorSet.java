@@ -16,7 +16,9 @@ import java.util.Optional;
  * @param origin    where the set came from; decides texture resolution and name precedence
  * @param source    human readable origin, used in log messages ("vanilla", pack id, file path)
  * @param scale     extra integer scale on top of the GUI scale, at least 1
- * @param images    the images this set provides, always containing {@link CursorState#DEFAULT}
+ * @param images    the images this set provides. Loaded sets always contain
+ *                  {@link CursorState#DEFAULT} - the parser enforces that - while the hand-made set
+ *                  is offered with no images at all until the player points a state at a usable file
  * @param clickEffect the click feedback this set asks for, so switching sets switches the effect
  */
 public record CursorSet(String id, String name, String namespace, CursorSetOrigin origin,
@@ -44,9 +46,6 @@ public record CursorSet(String id, String name, String namespace, CursorSetOrigi
         }
         clickEffect = clickEffect == null ? ClickEffect.DEFAULT : clickEffect;
         images = Map.copyOf(images);
-        if (!images.containsKey(CursorState.DEFAULT)) {
-            throw new IllegalArgumentException("a cursor set must provide the default state");
-        }
     }
 
     /** @return true when this set provides a dedicated image for the state */

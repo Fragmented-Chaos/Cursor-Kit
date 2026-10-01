@@ -41,7 +41,21 @@ public final class CursorVisibilityPolicy {
                                          double mouseX, double mouseY,
                                          int guiWidth, int guiHeight, int edgeMargin,
                                          boolean screenWantsSystemCursor) {
-        if (screenWantsSystemCursor) {
+        return shouldTakeOver(windowFocused, mouseGrabbed, mouseX, mouseY, guiWidth, guiHeight,
+                edgeMargin, screenWantsSystemCursor, true);
+    }
+
+    /**
+     * @param drawable true when the selected set can actually draw something for the current state.
+     *                 The hand-made set is offered before any path is usable, and a pack may ship no
+     *                 image at all, so this has to be part of the decision: hiding the system cursor
+     *                 and then drawing nothing would leave the player without any pointer.
+     */
+    public static boolean shouldTakeOver(boolean windowFocused, boolean mouseGrabbed,
+                                         double mouseX, double mouseY,
+                                         int guiWidth, int guiHeight, int edgeMargin,
+                                         boolean screenWantsSystemCursor, boolean drawable) {
+        if (!drawable || screenWantsSystemCursor) {
             return false;
         }
         if (!windowFocused || mouseGrabbed) {

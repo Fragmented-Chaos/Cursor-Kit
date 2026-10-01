@@ -3,8 +3,8 @@ package com.fragmentedchaos.cursorkit.mixin;
 import com.fragmentedchaos.cursorkit.Constants;
 import com.fragmentedchaos.cursorkit.client.CursorTranslations;
 import com.fragmentedchaos.cursorkit.client.gui.CursorKitScreen;
+import com.fragmentedchaos.cursorkit.client.gui.IconButton;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
@@ -39,12 +39,11 @@ public abstract class VideoSettingsScreenMixin extends OptionsSubScreen {
     private void cursorkit$addEntryRow(CallbackInfo ci) {
         Screen self = (Screen) (Object) this;
         Constants.LOG.info("Adding the cursor entry row to {}", self.getClass().getName());
-        // A vanilla button on purpose: this row sits among the screen's own options, so it should
-        // look like them rather than like the picker's flat style.
-        this.list.addBig(Button
-                .builder(CursorTranslations.get("cursorkit.button.open", "Cursor"),
-                        button -> Minecraft.getInstance().setScreenAndShow(new CursorKitScreen(self)))
-                .bounds(0, 0, 200, 20)
-                .build());
+        // Styled like a vanilla button on purpose: this row sits among the screen's own options, so
+        // it should look like them rather than like the picker's flat style. The mod's arrow icon is
+        // drawn on the left, matching the Sodium page list.
+        this.list.addBig(new IconButton(0, 0, 200, 20,
+                CursorTranslations.get("cursorkit.button.open", "Cursor"),
+                button -> Minecraft.getInstance().setScreenAndShow(new CursorKitScreen(self))));
     }
 }

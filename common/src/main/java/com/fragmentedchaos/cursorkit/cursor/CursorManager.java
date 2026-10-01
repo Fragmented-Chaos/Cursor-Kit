@@ -105,8 +105,8 @@ public final class CursorManager {
         found.addAll(CursorPackLoader.loadAll(configDirectory));
         found.addAll(CursorSetLoader.loadFromConfigDirectory(configDirectory));
         // Last, so an edited path is picked up by the same rescan as everything else.
-        CursorSets.custom(this.config, this.gameDirectory,
-                this.configFile == null ? "config" : this.configFile.toString()).ifPresent(found::add);
+        found.add(CursorSets.custom(this.config, this.gameDirectory,
+                this.configFile == null ? "config" : this.configFile.toString()));
         return CursorSetRegistry.merge(found);
     }
 

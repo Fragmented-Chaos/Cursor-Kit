@@ -57,6 +57,16 @@ class CursorVisibilityPolicyTest {
     }
 
     @Test
+    void aSetThatCannotDrawAnythingKeepsTheSystemCursor() {
+        // The hand-made set is offered before any path is usable, and a pack may ship no image at
+        // all: hiding the system cursor and then drawing nothing would leave no pointer on screen.
+        assertFalse(CursorVisibilityPolicy.shouldTakeOver(true, false, 100.0D, 100.0D,
+                400, 300, 2, false, false));
+        assertTrue(CursorVisibilityPolicy.shouldTakeOver(true, false, 100.0D, 100.0D,
+                400, 300, 2, false, true));
+    }
+
+    @Test
     void aScreenThatNeedsTheRealCursorIsLeftAlone() {
         // The click point editor asks for the system cursor, otherwise the custom one would cover
         // the pixel being clicked.

@@ -17,6 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class CursorManagerSystemSelectionTest {
 
+    /** The sets that matter here: the always-present hand-made row would throw the counts off. */
+    private static java.util.List<com.fragmentedchaos.cursorkit.cursor.model.CursorSet> loaded(
+            CursorManager manager) {
+        return manager.sets().stream()
+                .filter(set -> !com.fragmentedchaos.cursorkit.cursor.load.CursorSets.CUSTOM_ID.equals(set.id()))
+                .toList();
+    }
+
+
     private static final String SET_JSON = """
             { "name": "Some Set",
               "states": { "default": { "texture": "arrow.png" } } }
@@ -28,7 +37,7 @@ class CursorManagerSystemSelectionTest {
         CursorManager manager = CursorManager.get();
         Files.writeString(configDirectory.resolve("some.json"), SET_JSON);
         manager.rescan(configDirectory);
-        assertEquals(1, manager.sets().size());
+        assertEquals(1, loaded(manager).size());
 
         manager.selectSystem();
 

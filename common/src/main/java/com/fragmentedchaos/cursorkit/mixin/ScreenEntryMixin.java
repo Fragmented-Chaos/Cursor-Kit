@@ -4,7 +4,7 @@ import com.fragmentedchaos.cursorkit.Constants;
 import com.fragmentedchaos.cursorkit.client.CursorEntryPoint;
 import com.fragmentedchaos.cursorkit.client.CursorTranslations;
 import com.fragmentedchaos.cursorkit.client.gui.CursorKitScreen;
-import com.fragmentedchaos.cursorkit.client.gui.FlatButton;
+import com.fragmentedchaos.cursorkit.client.gui.IconFlatButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -48,7 +48,7 @@ public abstract class ScreenEntryMixin {
             return;
         }
         Constants.LOG.debug("Adding the cursor entry to {}", className);
-        addRenderableWidget(new FlatButton(8, screen.height - 27, 80, 20,
+        addRenderableWidget(new IconFlatButton(8, screen.height - 27, 80, 20,
                 CursorTranslations.get("cursorkit.button.open", "Cursor"),
                 button -> Minecraft.getInstance().setScreenAndShow(new CursorKitScreen(screen))));
     }
