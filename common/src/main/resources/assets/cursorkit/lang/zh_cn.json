@@ -59,5 +59,17 @@
     "cursorkit.state.text": "文本输入（I 型）",
     "cursorkit.state.drag": "拖拽",
     "cursorkit.state.disabled": "禁用",
-    "cursorkit.state.busy": "忙碌（加载）"
+    "cursorkit.state.busy": "忙碌（加载）",
+    "cursorkit.button.about": "关于",
+    "cursorkit.about.licence": "LGPL-3.0",
+    "cursorkit.about.close": "关闭",
+    "cursorkit.about.title": "关于 Cursor Kit",
+    "cursorkit.about.version_label": "版本",
+    "cursorkit.about.author_label": "作者",
+    "cursorkit.about.author": "Fragmented_Chaos",
+    "cursorkit.about.loaders_label": "加载器",
+    "cursorkit.about.licence_label": "许可证",
+    "cursorkit.about.source": "源码",
+    "cursorkit.about.home": "官网",
+    "cursorkit.about.issues": "反馈"
 }

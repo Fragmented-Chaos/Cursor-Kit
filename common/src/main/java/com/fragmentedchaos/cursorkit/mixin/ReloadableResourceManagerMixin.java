@@ -1,6 +1,6 @@
 package com.fragmentedchaos.cursorkit.mixin;
 
-import com.fragmentedchaos.cursorkit.client.CursorLoaderPlatform;
+import com.fragmentedchaos.cursorkit.client.CursorPlatforms;
 import com.fragmentedchaos.cursorkit.client.CursorReloadListener;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
@@ -24,13 +24,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * event instead (see the NeoForge entry point). Fabric and Quilt have no such event, and going
  * through vanilla's resource manager keeps this free of Fabric API - which Quilt would otherwise
  * demand QFAPI for.
+ * <p>
+ * The loader is asked through {@link CursorPlatforms#isNeoForge()} rather than through a registered
+ * platform on purpose: this constructor runs before the entry points that register one, so there is
+ * no platform to ask yet. A loader that would refuse this registration refuses it from the moment it
+ * starts, which is what makes a marker class a sound answer this early.
  */
 @Mixin(ReloadableResourceManager.class)
 public class ReloadableResourceManagerMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void cursorkit$registerCursorReloadListener(PackType type, CallbackInfo ci) {
-        if (type == PackType.CLIENT_RESOURCES && CursorLoaderPlatform.selfRegisterReloadListener()) {
+        if (type == PackType.CLIENT_RESOURCES && !CursorPlatforms.isNeoForge()) {
             ((ReloadableResourceManager) (Object) this)
                     .registerReloadListener(CursorReloadListener.INSTANCE);
         }

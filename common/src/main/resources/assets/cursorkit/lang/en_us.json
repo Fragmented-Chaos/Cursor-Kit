@@ -59,5 +59,17 @@
     "cursorkit.state.text": "Text (I-beam)",
     "cursorkit.state.drag": "Dragging",
     "cursorkit.state.disabled": "Disabled",
-    "cursorkit.state.busy": "Busy (loading)"
+    "cursorkit.state.busy": "Busy (loading)",
+    "cursorkit.button.about": "About",
+    "cursorkit.about.licence": "LGPL-3.0",
+    "cursorkit.about.close": "Close",
+    "cursorkit.about.title": "About Cursor Kit",
+    "cursorkit.about.version_label": "Version",
+    "cursorkit.about.author_label": "Author",
+    "cursorkit.about.author": "Fragmented_Chaos",
+    "cursorkit.about.loaders_label": "Loaders",
+    "cursorkit.about.licence_label": "Licence",
+    "cursorkit.about.source": "Source",
+    "cursorkit.about.home": "Website",
+    "cursorkit.about.issues": "Issues"
 }

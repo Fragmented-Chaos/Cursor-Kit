@@ -3,9 +3,25 @@ plugins {
     id 'net.fabricmc.fabric-loom'
 }
 
+repositories {
+    // Quilt 不是依赖：这里只为编译 QuiltPlatform 取 Quilt Loader 的 API。
+    // 该类由运行中的 Quilt Loader 提供，不会打包进 jar，Fabric 与 NeoForge 也永远不会加载它。
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Quilt'
+                url = uri('https://maven.quiltmc.org/repository/release')
+            }
+        }
+        filter { includeGroup('org.quiltmc') }
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    // 编译 QuiltPlatform 用，不参与运行时，也不进 jar。
+    compileOnly "org.quiltmc:quilt-loader:${quilt_loader_version}"
 
     // No Sodium dependency on purpose: the video settings link is made at runtime, see
     // CursorSodiumLink. This mod has to build and run with or without Sodium installed.

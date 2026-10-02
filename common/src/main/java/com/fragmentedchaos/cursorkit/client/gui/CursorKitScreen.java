@@ -63,11 +63,17 @@ public class CursorKitScreen extends Screen {
     private static final int SEARCH_HEIGHT = 18;
     private static final int PREVIEW_ICON_SIZE = 20;
     private static final int PREVIEW_ROW_HEIGHT = 22;
+    /** Smallest a preview row may shrink to on a short window; below this the labels would not fit. */
+    private static final int MIN_PREVIEW_ROW_HEIGHT = 13;
+    /** Height the footer (switches, done/cancel) needs, so the previews never run into it. */
+    private static final int FOOTER_RESERVED = 56;
     private static final int SWITCH_GAP = 4;
     private static final int FOOTER_BUTTON_WIDTH = 120;
     private static final int FOOTER_GAP = 4;
     /** Y of the tool buttons in the header, so they line up with the title. */
     private static final int TOOL_Y = 6;
+    /** Side of the square tool buttons in the header. */
+    private static final int TOOL_SIZE = 18;
     private static final int[] EDGE_MARGINS = {0, 1, 2, 4, 8};
     private static final int MAX_SCALE = 3;
 
@@ -160,17 +166,24 @@ public class CursorKitScreen extends Screen {
 
         // Tools sit next to the title in the top right corner, so the bottom row only carries the
         // two dialogs' buttons.
-        int toolWidth = toolButtonWidth();
-        FlatButton hotspots = new FlatButton(this.width - MARGIN - toolWidth, TOOL_Y, toolWidth, 20,
+        // Two small square buttons: a glyph reads faster than a label here, and it cannot be cut off
+        // by a translation that happens to be long. The words live in the tooltips.
+        ToolButton hotspots = new ToolButton(this.width - MARGIN - TOOL_SIZE, TOOL_Y, TOOL_SIZE,
+                ToolButton.Glyph.HOTSPOT,
                 CursorTranslations.get("cursorkit.button.hotspots", "Hotspots…"),
                 button -> openHotspotEditor());
         hotspots.active = !this.systemSelected && this.selected != null;
         addRenderableWidget(hotspots);
 
-        addRenderableWidget(new FlatButton(this.width - MARGIN - toolWidth * 2 - FOOTER_GAP, TOOL_Y,
-                toolWidth, 20,
+        addRenderableWidget(new ToolButton(this.width - MARGIN - TOOL_SIZE * 2 - FOOTER_GAP, TOOL_Y,
+                TOOL_SIZE, ToolButton.Glyph.FOLDER,
                 CursorTranslations.get("cursorkit.button.folder", "Folder"),
                 button -> openConfigFolder()));
+
+        addRenderableWidget(new ToolButton(this.width - MARGIN - TOOL_SIZE * 3 - FOOTER_GAP * 2, TOOL_Y,
+                TOOL_SIZE, ToolButton.Glyph.ABOUT,
+                CursorTranslations.get("cursorkit.button.about", "About"),
+                button -> Minecraft.getInstance().setScreenAndShow(new AboutScreen(this))));
 
         // Done and Cancel share the bottom row.
         int footerWidth = ScreenLayout.buttonWidth(this.width - MARGIN * 2, 2, FOOTER_GAP);
@@ -255,10 +268,6 @@ public class CursorKitScreen extends Screen {
 
     /** Every switch is the same width so the row lines up with the screen margins. */
     /** Width of the two tool buttons in the top right corner; they shrink in narrow windows. */
-    private int toolButtonWidth() {
-        return Math.min(FOOTER_BUTTON_WIDTH,
-                ScreenLayout.buttonWidth(this.width - MARGIN * 2, 3, FOOTER_GAP));
-    }
 
     private int switchWidth() {
         // Four switches: animation, click feedback, scale and the edge margin.
@@ -629,11 +638,17 @@ public class CursorKitScreen extends Screen {
                 left + 6, top + 18, 0xFF8899AA);
 
         long now = System.nanoTime() / 1_000_000L;
+        int rowHeight = previewRowHeight(previewEntries.size());
+        int iconSize = Math.max(10, Math.min(PREVIEW_ICON_SIZE, rowHeight - 4));
+        // No room for the file/hotspot line on a short window; the state name is what matters.
+        boolean showDetail = rowHeight >= PREVIEW_ROW_HEIGHT - 2;
         for (int index = 0; index < previewEntries.size(); index++) {
             PreviewEntry entry = previewEntries.get(index);
             CursorImage image = entry.image();
             int iconX = previewIconX();
-            int rowY = previewRowsTop() + index * PREVIEW_ROW_HEIGHT;
+            int rowY = previewRowsTop() + index * rowHeight;
+            // The icon may have shrunk, so the hotspot marker has to be scaled the same way.
+            float previewScale = (float) iconSize / Math.max(1, entry.frameSize());
 
             if (entry.texture() != null) {
                 // The previews follow the animation switch, otherwise flipping it looks like it does
@@ -644,14 +659,14 @@ public class CursorKitScreen extends Screen {
                 extractor.blit(RenderPipelines.GUI_TEXTURED, entry.texture(),
                         iconX, rowY,
                         (float) (frame * entry.frameSize()), 0.0F,
-                        PREVIEW_ICON_SIZE, PREVIEW_ICON_SIZE,
+                        iconSize, iconSize,
                         entry.frameSize(), entry.frameSize(),
                         entry.frameSize() * entry.frames(), entry.frameSize());
             }
             // The preview is drawn bigger than the frame, so the hotspot has to grow with it,
             // otherwise the marker sits closer to the top left corner than it really is.
-            int hotX = iconX + Math.round(entry.hotspotX() * entry.previewScale());
-            int hotY = rowY + Math.round(entry.hotspotY() * entry.previewScale());
+            int hotX = iconX + Math.round(entry.hotspotX() * previewScale);
+            int hotY = rowY + Math.round(entry.hotspotY() * previewScale);
             boolean edited = CursorManager.get()
                     .hasHotspotOverride(this.selected.id(), entry.target());
             extractor.fill(hotX - 1, hotY - 1, hotX + 2, hotY + 2,
@@ -664,21 +679,23 @@ public class CursorKitScreen extends Screen {
                         .append(CursorTranslations.get("cursorkit.state.fallback",
                                 "(default)"));
             }
-            int labelWidth = Math.max(20, this.width - MARGIN - (iconX + PREVIEW_ICON_SIZE + 6));
+            int labelWidth = Math.max(20, this.width - MARGIN - (iconX + iconSize + 6));
             extractor.text(this.font, fit(stateLabel, labelWidth),
-                    iconX + PREVIEW_ICON_SIZE + 6, rowY + 1, 0xFFDDDDDD);
-            extractor.text(this.font,
-                    fit(Component.literal(shortName(image) + "  @" + entry.hotspotX() + ","
-                            + entry.hotspotY()), labelWidth),
-                    iconX + PREVIEW_ICON_SIZE + 6, rowY + 11,
-                    edited ? 0xFFFFD479 : 0xFF8899AA);
+                    iconX + iconSize + 6, rowY + 1, 0xFFDDDDDD);
+            if (showDetail) {
+                extractor.text(this.font,
+                        fit(Component.literal(shortName(image) + "  @" + entry.hotspotX() + ","
+                                + entry.hotspotY()), labelWidth),
+                        iconX + iconSize + 6, rowY + 11,
+                        edited ? 0xFFFFD479 : 0xFF8899AA);
+            }
         }
 
         if (!this.draft.animate()) {
             extractor.text(this.font,
                     CursorTranslations.get("cursorkit.details.static",
                             "Animate off: the cursor stays the arrow"),
-                    previewIconX(), previewRowsTop() + PREVIEW_ROW_HEIGHT, 0xFFFFD479);
+                    previewIconX(), previewRowsTop() + rowHeight, 0xFFFFD479);
         }
     }
 
@@ -716,6 +733,21 @@ public class CursorKitScreen extends Screen {
 
     private int previewIconX() {
         return MARGIN * 2 + listWidth() + 6;
+    }
+
+    /**
+     * Height of one preview row for the current window.
+     * <p>
+     * The six states have to stay visible together - comparing them is the whole point of the panel -
+     * so a short window gets shorter rows instead of rows that run into the footer. Drawing and
+     * anything that measures the rows go through here, so they stay in step.
+     *
+     * @param rows how many rows are about to be drawn
+     */
+    private int previewRowHeight(int rows) {
+        int space = Math.max(0, this.height - previewRowsTop() - FOOTER_RESERVED);
+        return Math.max(MIN_PREVIEW_ROW_HEIGHT,
+                Math.min(PREVIEW_ROW_HEIGHT, space / Math.max(1, rows)));
     }
 
     /**

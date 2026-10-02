@@ -2,6 +2,7 @@ package com.fragmentedchaos.cursorkit.neoforge;
 
 import com.fragmentedchaos.cursorkit.Constants;
 import com.fragmentedchaos.cursorkit.CursorKitCommon;
+import com.fragmentedchaos.cursorkit.client.CursorPlatforms;
 import com.fragmentedchaos.cursorkit.client.CursorReloadListener;
 import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
@@ -16,9 +17,10 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 public class CursorKit {
 
     public CursorKit(IEventBus eventBus) {
+        CursorPlatforms.register(new NeoForgePlatform());
         CursorKitCommon.initClient();
         // NeoForge only accepts mod reload listeners through this event, so the shared mixin path is
-        // disabled on this loader (see CursorLoaderPlatform).
+        // skipped on this loader (see ReloadableResourceManagerMixin).
         eventBus.addListener(CursorKit::onAddClientReloadListeners);
     }
 
