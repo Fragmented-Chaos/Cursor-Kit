@@ -37,13 +37,13 @@ repositories {
 
 sourcesJar {
     from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
+        rename { "${mod_id}-LICENSE.txt".toString() }
     }
 }
 
 jar {
     from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
+        rename { "${mod_id}-LICENSE.txt".toString() }
     }
 
     manifest {

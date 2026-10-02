@@ -79,13 +79,16 @@ class CursorSetRegistryTest {
     }
 
     @Test
-    void findFallsBackToFirstSet() {
+    void aMissingNamedSetIsNotReplacedByAnother() {
         List<CursorSet> sets = List.of(set("alpha", CursorSetOrigin.RESOURCE_PACK),
                 set("beta", CursorSetOrigin.RESOURCE_PACK));
 
         assertEquals("beta", CursorSetRegistry.find(sets, "beta").orElseThrow().id());
-        assertEquals("alpha", CursorSetRegistry.find(sets, "missing").orElseThrow().id());
+        // Gone is gone: the manager turns this into "use the system cursor" instead of quietly
+        // jumping to another set, which would look like the mod picked one on its own.
+        assertTrue(CursorSetRegistry.find(sets, "missing").isEmpty());
         assertEquals("alpha", CursorSetRegistry.find(sets, null).orElseThrow().id());
+        assertEquals("alpha", CursorSetRegistry.find(sets, "").orElseThrow().id());
         assertTrue(CursorSetRegistry.find(List.of(), "anything").isEmpty());
     }
 }

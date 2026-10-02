@@ -19,25 +19,45 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CursorRendererSizeTest {
 
     @Test
-    void aCursorKeepsItsUsualSizeWhateverTheImageResolution() {
+    void aCursorKeepsItsPhysicalSizeWhateverTheWindowIs() {
+        // One image pixel is one screen pixel, so the drawn size must not grow with the GUI scale:
+        // the same cursor has to stay the same size when the window is enlarged.
         for (int frameSize : new int[] {16, 24, 32, 48, 64, 128}) {
             for (int guiScale : new int[] {1, 2, 3, 4}) {
                 int size = CursorRenderer.scaledSize(frameSize, 1, guiScale);
+                int physical = size * guiScale;
 
-                assertTrue(Math.abs(size - CursorImage.FRAME_SIZE) <= 6,
-                        "frameSize=" + frameSize + " guiScale=" + guiScale + " drew " + size
-                                + " GUI units instead of about " + CursorImage.FRAME_SIZE);
+                assertTrue(Math.abs(physical - frameSize) <= 6 * guiScale,
+                        "frameSize=" + frameSize + " guiScale=" + guiScale + " drew " + physical
+                                + " physical pixels instead of about " + frameSize);
             }
         }
     }
 
     @Test
     void aHighResolutionImageIsDrawnPixelForPixelWhenItFits() {
-        // 32x32 on a GUI scale of 2: the usual 16 GUI units are exactly 32 physical pixels.
+        // The image's own pixels are the screen's pixels, whatever the GUI scale is.
+        assertEquals(32, CursorRenderer.scaledSize(32, 1, 1));   // 32*1 = 32 physical, 1:1
         assertEquals(16, CursorRenderer.scaledSize(32, 1, 2));   // 16*2 = 32 physical, 1:1
         assertEquals(16, CursorRenderer.scaledSize(64, 1, 4));   // 16*4 = 64 physical, 1:1
-        // A GUI scale of 1 has no room for 32 pixels at the usual size: exact 2:1 downscale instead.
-        assertEquals(16, CursorRenderer.scaledSize(32, 1, 1));
+    }
+
+    @Test
+    void extremeSizesStillLandOnAnExactMultiple() {
+        // Small art, huge art and a big multiplier: the drawn size must stay pixel exact, because a
+        // fractional ratio is what makes an HD cursor look blurry.
+        for (int frameSize : new int[] {1, 8, 1024}) {
+            for (int wanted : new int[] {1, 4}) {
+                for (int guiScale : new int[] {1, 4, 8}) {
+                    int size = CursorRenderer.scaledSize(frameSize, wanted, guiScale);
+                    int physical = size * guiScale;
+                    assertTrue(physical % frameSize == 0 || frameSize % physical == 0,
+                            "frameSize=" + frameSize + " wanted=" + wanted + " guiScale=" + guiScale
+                                    + " drew " + physical + " physical pixels, which is not an exact"
+                                    + " multiple of the image");
+                }
+            }
+        }
     }
 
     @Test
@@ -52,7 +72,7 @@ class CursorRendererSizeTest {
                 for (int wanted : new int[] {1, 2, 3}) {
                     int size = CursorRenderer.scaledSize(frameSize, wanted, guiScale);
                     assertTrue(size >= 1, "frameSize=" + frameSize + " guiScale=" + guiScale);
-                    assertTrue(size <= CursorImage.FRAME_SIZE * wanted + 6,
+                    assertTrue(size <= frameSize * wanted + 6,
                             "frameSize=" + frameSize + " size=" + size);
                 }
             }

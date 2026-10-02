@@ -159,6 +159,10 @@ public final class CursorReloadListener implements ResourceManagerReloadListener
         CursorGeometry.recordPngHeader(id, new java.io.ByteArrayInputStream(bytes));
     }
 
+    /** Textures this mod uploaded itself, so the ones a vanished set used can be released again. */
+    private static final java.util.Set<Identifier> REGISTERED =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     /**
      * Registers every texture this mod serves from its own sources. Resource pack sets are skipped:
      * Minecraft's texture manager already finds those in the pack.
@@ -173,6 +177,7 @@ public final class CursorReloadListener implements ResourceManagerReloadListener
         if (textureManager == null) {
             return;
         }
+        java.util.Set<Identifier> wanted = new java.util.HashSet<>();
         for (CursorSet set : sets) {
             for (CursorImage image : imagesOf(set)) {
                 IoSupplier<InputStream> source =
@@ -182,7 +187,20 @@ public final class CursorReloadListener implements ResourceManagerReloadListener
                 }
                 Identifier id = CursorTextures.resolve(set, image);
                 textureManager.registerAndLoad(id, new CursorTexture(id, source, image));
+                wanted.add(id);
                 Constants.LOG.debug("Registered cursor texture {} for {}", id, set.name());
+            }
+        }
+
+        // Sets and per-state paths come and go while the game runs. The textures we upload ourselves
+        // are not owned by any pack, so nothing else would ever drop them: releasing the ones that
+        // are no longer wanted keeps the manager from growing for the whole session.
+        REGISTERED.addAll(wanted);
+        for (Identifier stale : new java.util.ArrayList<>(REGISTERED)) {
+            if (!wanted.contains(stale)) {
+                textureManager.release(stale);
+                REGISTERED.remove(stale);
+                Constants.LOG.debug("Released cursor texture {}", stale);
             }
         }
     }

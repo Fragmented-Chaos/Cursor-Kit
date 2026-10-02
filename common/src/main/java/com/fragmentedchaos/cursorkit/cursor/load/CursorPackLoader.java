@@ -94,7 +94,7 @@ public final class CursorPackLoader {
                 continue;
             }
             if (!loaded.isEmpty()) {
-                Constants.LOG.info("Cursor pack {} provides {} cursor set(s)", source, loaded.size());
+                Constants.LOG.debug("Cursor pack {} provides {} cursor set(s)", source, loaded.size());
             }
             result.addAll(loaded);
         }

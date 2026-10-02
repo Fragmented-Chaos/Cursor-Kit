@@ -49,11 +49,11 @@ public final class CursorSetRegistry {
                 continue;
             }
             if (candidate.origin().beats(current.origin())) {
-                Constants.LOG.info("Cursor set '{}' from {} overrides the one from {}",
+                Constants.LOG.debug("Cursor set '{}' from {} overrides the one from {}",
                         candidate.id(), candidate.origin().label(), current.origin().label());
                 winners.put(candidate.id(), candidate);
             } else {
-                Constants.LOG.info("Cursor set '{}' from {} is overridden by {}",
+                Constants.LOG.debug("Cursor set '{}' from {} is overridden by {}",
                         candidate.id(), candidate.origin().label(), current.origin().label());
             }
         }
@@ -72,12 +72,16 @@ public final class CursorSetRegistry {
         if (sets.isEmpty()) {
             return Optional.empty();
         }
-        if (id != null) {
+        if (id != null && !id.isEmpty()) {
             for (CursorSet set : sets) {
                 if (set.id().equals(id)) {
                     return Optional.of(set);
                 }
             }
+            // The requested set is gone. Returning another one would look like the mod picked a
+            // cursor on its own, so the caller decides what to do - the manager hands the cursor
+            // back to the system.
+            return Optional.empty();
         }
         return Optional.of(sets.get(0));
     }

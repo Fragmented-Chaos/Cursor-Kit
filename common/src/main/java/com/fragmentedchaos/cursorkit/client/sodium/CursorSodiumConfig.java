@@ -57,6 +57,6 @@ public final class CursorSodiumConfig implements ConfigEntryPoint {
                         .setScreenConsumer(parent -> Minecraft.getInstance()
                                 .setScreenAndShow(new CursorKitScreen(parent))));
         CursorEntryPoint.markSodiumLinked();
-        Constants.LOG.info("Sodium video settings: added the cursor page");
+        Constants.LOG.debug("Sodium video settings: added the cursor page");
     }
 }

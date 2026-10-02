@@ -84,7 +84,9 @@ public final class CursorRenderer {
         double mouseX = mouse.getScaledXPos(window);
         double mouseY = mouse.getScaledYPos(window);
         long nowMs = System.nanoTime() / 1_000_000L;
-        if (config.clickEffect()) {
+        // Only while a screen is open: clicking in the world is attacking or using an item, and a
+        // ripple there is noise the player never asked for.
+        if (config.clickEffect() && resolved.screen() != null) {
             // Also while the system cursor is in charge: the click feedback is a mod feature of its
             // own, and a player who keeps Minecraft's cursor still wants to see their clicks land.
             ClickEffect effect = set == null ? ClickEffect.DEFAULT : set.clickEffect();
@@ -135,8 +137,10 @@ public final class CursorRenderer {
      * A cursor keeps the size a cursor normally has; the image resolution only decides how sharp it
      * is. Around the requested size (16 GUI units times the multiplier) the closest size whose
      * physical pixels are a whole multiple - or a whole fraction - of the frame is chosen, so the
-     * image is never resampled by a fractional ratio: a 32x32 cursor on a GUI scale of 2 lands on
-     * exactly 32 physical pixels, one image pixel per screen pixel, at the usual size.
+     * image is never resampled by a fractional ratio, and the size is worked out in physical
+     * pixels: one image pixel is one screen pixel, so the cursor keeps the same size on screen when
+     * the window (and with it the GUI scale) changes - a 32x32 cursor is 32 physical pixels whether
+     * the GUI scale is 1 or 4, and the resolution only decides how sharp it looks.
      *
      * @param frameSize image pixels of one frame
      * @param wanted    size multiplier the player picked (1x, 2x, 3x)
@@ -144,11 +148,17 @@ public final class CursorRenderer {
      * @return side length in GUI units
      */
     static int scaledSize(int frameSize, int wanted, int guiScale) {
-        int intended = Math.max(1, CursorImage.FRAME_SIZE * Math.max(1, wanted));
+        int scale = Math.max(1, guiScale);
+        int intendedPhysical = Math.max(1, frameSize * Math.max(1, wanted));
+        int intended = Math.max(1, Math.round((float) intendedPhysical / scale));
         int best = intended;
         int bestError = Integer.MAX_VALUE;
-        for (int size = Math.max(1, intended - 6); size <= intended + 6; size++) {
-            int physical = size * guiScale;
+        // The window grows with the target: a fixed +-6 cannot reach an exact multiple once the
+        // cursor is scaled up (128px art at 4x wants 512 GUI units, where the nearest usable size
+        // may be dozens of units away) and the drawing would end up resampled.
+        int radius = Math.max(6, intended / 4);
+        for (int size = Math.max(1, intended - radius); size <= intended + radius; size++) {
+            int physical = size * scale;
             boolean exact = physical % frameSize == 0 || frameSize % physical == 0;
             int error = Math.abs(size - intended);
             if (exact && error < bestError) {

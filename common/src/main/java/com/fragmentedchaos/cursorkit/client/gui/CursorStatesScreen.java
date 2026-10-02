@@ -124,7 +124,7 @@ public class CursorStatesScreen extends Screen {
         int rowY = rowsTop();
         for (CursorState state : CursorState.values()) {
             EditBox field = new EditBox(this.font, fieldLeft(), rowY, fieldWidth(), FIELD_HEIGHT,
-                    Component.literal(state.id()));
+                    CursorTranslations.state(state));
             field.setMaxLength(512);
             field.setValue(this.draft.customState(state.id()));
             field.setHint(CursorTranslations.get("cursorkit.custom.field", "image file"));
@@ -235,7 +235,7 @@ public class CursorStatesScreen extends Screen {
             // Grey: nothing set, gold: the file is there, red with a "?": it is not.
             int colour = !set ? 0xFF8899AA : (found ? 0xFFFFD479 : 0xFFFF7777);
             extractor.text(this.font,
-                    Component.literal(state.id() + (set && !found ? " ?" : "")),
+                    CursorTranslations.state(state).copy().append(set && !found ? " ?" : ""),
                     left + 8, rowY + 5, colour);
             drawPreview(extractor, state, found, right - 8 - PREVIEW_SIZE, rowY);
             rowY += rowPitch();

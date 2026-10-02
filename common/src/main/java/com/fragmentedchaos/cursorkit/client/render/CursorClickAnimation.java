@@ -62,10 +62,6 @@ public final class CursorClickAnimation {
         if (spec != null && !spec.disabled() && lastPressMs > spawnedPressMs) {
             spawnedPressMs = lastPressMs;
             EFFECTS.add(new Effect(x, y, nowMs, spec));
-            Constants.LOG.info("Click effect: {} colour #{} (set selected: {})", spec.type(),
-                    String.format("%06X", spec.color() & 0xFFFFFF),
-                    com.fragmentedchaos.cursorkit.cursor.CursorManager.get()
-                            .findSelected().map(set -> set.id()).orElse("system"));
         } else if (lastPressMs > spawnedPressMs) {
             spawnedPressMs = lastPressMs;
         }

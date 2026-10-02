@@ -43,6 +43,11 @@ public final class CursorTranslations {
      * @param args     values for the {@code %s} placeholders; {@link Component}s are resolved first
      * @return the translated, formatted text
      */
+    /** @return the display name of a cursor state, localised, falling back to its id */
+    public static Component state(com.fragmentedchaos.cursorkit.cursor.model.CursorState state) {
+        return get("cursorkit.state." + state.id(), state.id());
+    }
+
     public static Component get(String key, String fallback, Object... args) {
         String text = resolve(key, fallback);
         return Component.literal(args.length == 0 ? text : format(text, args));

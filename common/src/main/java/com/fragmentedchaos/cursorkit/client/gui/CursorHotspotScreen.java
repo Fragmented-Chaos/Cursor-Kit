@@ -498,7 +498,7 @@ public class CursorHotspotScreen extends Screen
                         .hasHotspotOverride(CursorHotspotScreen.this.set().id(), this.rowState);
                 CursorImage image = CursorHotspotScreen.this.set().image(this.rowState).orElse(null);
                 int colour = active ? 0xFFFFD479 : (hovered ? 0xFFFFFFFF : 0xFFBFBFBF);
-                String label = (active ? "> " : "  ") + this.rowState.id();
+                String label = (active ? "> " : "  ") + CursorTranslations.state(this.rowState).getString();
                 if (!CursorHotspotScreen.this.set().has(this.rowState)) {
                     label += "  " + CursorTranslations.get("cursorkit.state.fallback",
                             "(default)").getString();

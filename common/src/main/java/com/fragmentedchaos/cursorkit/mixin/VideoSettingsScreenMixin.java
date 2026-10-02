@@ -38,7 +38,7 @@ public abstract class VideoSettingsScreenMixin extends OptionsSubScreen {
     @Inject(method = "addOptions", at = @At("TAIL"))
     private void cursorkit$addEntryRow(CallbackInfo ci) {
         Screen self = (Screen) (Object) this;
-        Constants.LOG.info("Adding the cursor entry row to {}", self.getClass().getName());
+        Constants.LOG.debug("Adding the cursor entry row to {}", self.getClass().getName());
         // Styled like a vanilla button on purpose: this row sits among the screen's own options, so
         // it should look like them rather than like the picker's flat style. The mod's arrow icon is
         // drawn on the left, matching the Sodium page list.

@@ -68,9 +68,14 @@ public final class CursorManager {
 
         List<CursorSet> loaded = mergeConfig(configDirectory);
         boolean changed = apply(loaded);
-        Constants.LOG.info("Loaded {} cursor set(s): {}", this.sets.size(),
+        // One line per start, so a "why did it pick that cursor" report can be answered from the log.
+        Constants.LOG.debug("Cursor selection after loading: stored='{}' resolved='{}' available={}",
+                this.config.selectedSet(),
+                findSelected().map(CursorSet::id).orElse("<system cursor>"),
+                this.sets.size());
+        Constants.LOG.debug("Loaded {} cursor set(s): {}", this.sets.size(),
                 this.sets.stream().map(CursorSet::describe).toList());
-        Constants.LOG.info("Configured click effect: {} / hand-made set present: {} / its effect: {}",
+        Constants.LOG.debug("Configured click effect: {} / hand-made set present: {} / its effect: {}",
                 this.config.customEffect().type(),
                 this.sets.stream().anyMatch(set -> set.id().equals(CursorSets.CUSTOM_ID)),
                 this.sets.stream().filter(set -> set.id().equals(CursorSets.CUSTOM_ID)).findFirst()
@@ -79,10 +84,13 @@ public final class CursorManager {
             Constants.LOG.debug("Cursor set list is unchanged");
         }
 
-        if (!isSystemSelected() && findSelected().isEmpty() && !this.sets.isEmpty()) {
-            Constants.LOG.warn("Selected cursor set '{}' no longer exists, falling back to '{}'",
-                    this.selectedId, this.sets.get(0).id());
-            select(this.sets.get(0).id());
+        if (!isSystemSelected() && findSelected().isEmpty()) {
+            // The set the player picked is gone (deleted, or its resource pack was switched off).
+            // Hand the cursor back to the system - and write that down, otherwise the next start
+            // would silently land on some other set, which looks like the mod picked one itself.
+            Constants.LOG.warn("Selected cursor set '{}' no longer exists, using the system cursor",
+                    this.selectedId);
+            selectSystem();
         }
     }
 
@@ -98,6 +106,31 @@ public final class CursorManager {
      */
     public boolean rescan(Path configDirectory) {
         return apply(mergeConfig(configDirectory));
+    }
+
+    /**
+     * Reads the config directory <b>without touching this manager's state</b>, so the caller may run
+     * it on a background thread: it opens zips, parses JSON and reads PNG headers, which is far too
+     * much work to do inside a frame.
+     *
+     * @param configDirectory the {@code config/cursorkit} directory
+     * @return the merged set list, ready for {@link #applyLoaded(List)}
+     */
+    public List<CursorSet> loadFrom(Path configDirectory) {
+        return mergeConfig(configDirectory);
+    }
+
+    /**
+     * Makes the sets {@link #loadFrom(Path)} read visible.
+     * <p>
+     * Render thread only: it swaps the list the renderer and the picker look at, bumps the generation
+     * that tells them to refresh, and has to be seen by them in the same frame.
+     *
+     * @param loaded the list returned by {@link #loadFrom(Path)}
+     * @return true when the visible set list actually changed
+     */
+    public boolean applyLoaded(List<CursorSet> loaded) {
+        return apply(loaded);
     }
 
     private List<CursorSet> mergeConfig(Path configDirectory) {

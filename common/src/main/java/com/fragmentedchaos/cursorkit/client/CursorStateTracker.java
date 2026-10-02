@@ -43,6 +43,12 @@ public final class CursorStateTracker {
         return minecraft == null ? null : minecraft.mouseHandler;
     }
 
+    /** The screen the last frame resolved for, used to spot the frame a screen was opened on. */
+    private static Screen lastScreen;
+
+    /** True while the left button was already down when the current screen opened. */
+    private static boolean staleLeftButton;
+
     /** @return the state and the screen it applies to; the screen is null when none is open */
     public static Resolved resolve() {
         Minecraft minecraft = Minecraft.getInstance();
@@ -51,8 +57,17 @@ public final class CursorStateTracker {
             return new Resolved(null, CursorState.DEFAULT, CursorContext.EMPTY);
         }
 
-        boolean dragging = screen.isDragging()
-                || (minecraft.mouseHandler != null && minecraft.mouseHandler.isLeftPressed());
+        // A screen is usually opened by the very click that is still held down (attack, use, open
+        // the inventory): counting that press would leave the cursor stuck in the grabbing state
+        // until the player lets go, so it is ignored until the button is released once.
+        boolean leftHeld = minecraft.mouseHandler != null && minecraft.mouseHandler.isLeftPressed();
+        if (screen != lastScreen) {
+            lastScreen = screen;
+            staleLeftButton = leftHeld;
+        } else if (!leftHeld) {
+            staleLeftButton = false;
+        }
+        boolean dragging = screen.isDragging() || (leftHeld && !staleLeftButton);
         boolean busy = minecraft.gui.overlay() != null;
 
         CursorContext context = new CursorContext(dragging, busy, requested);

@@ -206,11 +206,22 @@ public class CursorKitScreen extends Screen {
 
         // Point the details panel at the freshly read instance of the same set, if it is still there.
         if (this.selected != null) {
+            CursorSet replacement = null;
             for (CursorSet set : manager.sets()) {
                 if (set.id().equals(this.selected.id())) {
-                    this.selected = set;
+                    replacement = set;
                     break;
                 }
+            }
+            if (replacement != null) {
+                this.selected = replacement;
+            } else if (!this.selected.id().equals(com.fragmentedchaos.cursorkit.cursor.load.CursorSets.CUSTOM_ID)) {
+                // The set was removed while the screen was open. Keeping the stale instance would show
+                // the details of something that no longer exists - and its textures have just been
+                // released, so the previews would be missing-texture blocks. The mod already handed
+                // the cursor back to the system, so the panel has to follow it there.
+                this.selected = null;
+                this.systemSelected = true;
             }
         }
         this.list.populate(manager.sets(), this.search == null ? "" : this.search.getValue());
@@ -431,7 +442,7 @@ public class CursorKitScreen extends Screen {
                     failed.add(path.getFileName().toString());
                 } else {
                     installed.add(what);
-                    Constants.LOG.info("Installed {} from {}", what, path);
+                    Constants.LOG.debug("Installed {} from {}", what, path);
                 }
             } catch (Exception e) {
                 Constants.LOG.warn("Could not install {}: {}", path, e.toString());
@@ -646,8 +657,8 @@ public class CursorKitScreen extends Screen {
             extractor.fill(hotX - 1, hotY - 1, hotX + 2, hotY + 2,
                     edited ? 0xFFFFD479 : 0xFFFF5555);
 
-            Component stateLabel = Component.literal(entry.state().id()
-                    + (image.animated() ? "  " + image.frames() + "f" : ""));
+            Component stateLabel = CursorTranslations.state(entry.state()).copy()
+                    .append(image.animated() ? "  " + image.frames() + "f" : "");
             if (!this.selected.has(entry.state())) {
                 stateLabel = stateLabel.copy().append(Component.literal("  "))
                         .append(CursorTranslations.get("cursorkit.state.fallback",
